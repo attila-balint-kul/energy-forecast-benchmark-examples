@@ -75,6 +75,6 @@ class NaiveSeasonalAvg:
 
 
 # Instantiate your model
-model = NaiveSeasonalAvg('1D', 28)
+model = NaiveSeasonalAvg('7D', 4)
 # Create a forecast server by passing in your model
 app = server_factory(model)
