@@ -1,0 +1,4 @@
+enfobench
+jupyterlab
+pandas
+matplotlib
