@@ -1,4 +1,4 @@
-enfobench
+enfobench>=0.3.0
 jupyter
 pandas
 matplotlib
