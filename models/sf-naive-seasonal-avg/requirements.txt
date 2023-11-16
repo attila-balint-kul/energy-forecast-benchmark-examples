@@ -1,2 +1,2 @@
-enfobench==0.2.2
+enfobench==0.3.0
 statsforecast>=1.4.0,<2.0.0

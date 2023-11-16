@@ -1,4 +1,4 @@
 enfobench
-jupyterlab
+jupyter
 pandas
 matplotlib

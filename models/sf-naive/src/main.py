@@ -1,10 +1,10 @@
-from __future__ import annotations
-
-from enfobench.evaluation.server import server_factory
 import pandas as pd
-from enfobench.evaluation import ModelInfo, ForecasterType
-from enfobench.evaluation.utils import create_forecast_index
+
 from statsforecast.models import Naive
+
+from enfobench import AuthorInfo, ModelInfo, ForecasterType
+from enfobench.evaluation.server import server_factory
+from enfobench.evaluation.utils import create_forecast_index
 
 
 class NaiveModel:
@@ -12,6 +12,12 @@ class NaiveModel:
     def info(self) -> ModelInfo:
         return ModelInfo(
             name="statsforecast.models.Naive",
+            authors=[
+                AuthorInfo(
+                    name="Attila Balint",
+                    email="attila.balint@kuleuven.be"
+                )
+            ],
             type=ForecasterType.quantile,
             params={},
         )
@@ -26,7 +32,7 @@ class NaiveModel:
         **kwargs
     ) -> pd.DataFrame:
         # Create model using period length
-        y = history.set_index('ds').y
+        y = history.y
         model = Naive()
 
         # Make forecast
@@ -46,9 +52,7 @@ class NaiveModel:
                 index=index,
                 data=pred
             )
-            .rename_axis("ds")
             .rename(columns={"mean": "yhat"})
-            .reset_index()
             .fillna(y.mean())
         )
         return forecast

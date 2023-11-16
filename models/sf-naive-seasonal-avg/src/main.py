@@ -1,13 +1,12 @@
-from __future__ import annotations
-
+import os
 from datetime import timedelta
 
-from enfobench.evaluation.server import server_factory
 import pandas as pd
-from enfobench.evaluation import ModelInfo, ForecasterType
-from enfobench.evaluation.utils import create_forecast_index
 from pandas import Timedelta
-from statsforecast.models import SeasonalNaive
+from statsforecast.models import SeasonalWindowAverage
+from enfobench import AuthorInfo, ModelInfo, ForecasterType
+from enfobench.evaluation.server import server_factory
+from enfobench.evaluation.utils import create_forecast_index
 
 
 def periods_in_duration(ts, duration) -> int:
@@ -24,17 +23,25 @@ def periods_in_duration(ts, duration) -> int:
     return int(periods)
 
 
-class NaiveSeasonal:
+class NaiveSeasonalAvg:
 
-    def __init__(self, season_length: str):
+    def __init__(self, season_length: str, window_size: int):
         self.season_length = season_length
+        self.window_size = window_size
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name="statsforecast.models.SeasonalNaive",
-            type=ForecasterType.quantile,
+            name="statsforecast.models.SeasonalWindowAverage",
+            authors=[
+                AuthorInfo(
+                    name="Attila Balint",
+                    email="attila.balint@kuleuven.be"
+                )
+            ],
+            type=ForecasterType.point,
             params={
                 "seasonality": self.season_length,
+                "window_size": self.window_size
             },
         )
 
@@ -48,15 +55,14 @@ class NaiveSeasonal:
         **kwargs
     ) -> pd.DataFrame:
         # Create model using period length
-        y = history.set_index('ds').y
+        y = history.y
         periods = periods_in_duration(ts=y.index, duration=pd.Timedelta(self.season_length))
-        model = SeasonalNaive(season_length=periods)
+        model = SeasonalWindowAverage(season_length=periods, window_size=self.window_size)
 
         # Make forecast
         pred = model.forecast(
             y=y.values,
             h=horizon,
-            level=level,
             **kwargs
         )
 
@@ -64,20 +70,21 @@ class NaiveSeasonal:
         index = create_forecast_index(history=history, horizon=horizon)
 
         # Format forecast dataframe
-        forecast = (
-            pd.DataFrame(
-                index=index,
-                data=pred
-            )
-            .rename_axis("ds")
-            .rename(columns={"mean": "yhat"})
-            .reset_index()
-            .fillna(y.mean())
-        )
+        forecast = pd.DataFrame(
+            index=index,
+            data={
+                'yhat': pred['mean'],
+            }
+        ).fillna(y.mean())
         return forecast
 
 
+# Load parameters
+seasonality = str(os.getenv("ENFOBENCH_MODEL_SEASONALITY"))
+window_size = int(os.getenv("ENFOBENCH_MODEL_WINDOW_SIZE"))
+
 # Instantiate your model
-model = NaiveSeasonal('7D')
+model = NaiveSeasonalAvg(seasonality, window_size)
+
 # Create a forecast server by passing in your model
 app = server_factory(model)

@@ -1,13 +1,12 @@
-from __future__ import annotations
-
+import os
 from datetime import timedelta
 
-from enfobench.evaluation.server import server_factory
 import pandas as pd
-from enfobench.evaluation import ModelInfo, ForecasterType
-from enfobench.evaluation.utils import create_forecast_index
 from pandas import Timedelta
 from statsforecast.models import SeasonalNaive
+from enfobench import AuthorInfo, ModelInfo, ForecasterType
+from enfobench.evaluation.server import server_factory
+from enfobench.evaluation.utils import create_forecast_index
 
 
 def periods_in_duration(ts, duration) -> int:
@@ -32,6 +31,12 @@ class NaiveSeasonal:
     def info(self) -> ModelInfo:
         return ModelInfo(
             name="statsforecast.models.SeasonalNaive",
+            authors=[
+                AuthorInfo(
+                    name="Attila Balint",
+                    email="attila.balint@kuleuven.be"
+                )
+            ],
             type=ForecasterType.quantile,
             params={
                 "seasonality": self.season_length,
@@ -48,7 +53,7 @@ class NaiveSeasonal:
         **kwargs
     ) -> pd.DataFrame:
         # Create model using period length
-        y = history.set_index('ds').y
+        y = history.y
         periods = periods_in_duration(ts=y.index, duration=pd.Timedelta(self.season_length))
         model = SeasonalNaive(season_length=periods)
 
@@ -69,15 +74,16 @@ class NaiveSeasonal:
                 index=index,
                 data=pred
             )
-            .rename_axis("ds")
             .rename(columns={"mean": "yhat"})
-            .reset_index()
             .fillna(y.mean())
         )
         return forecast
 
 
+# Load parameters
+seasonality = str(os.getenv("ENFOBENCH_MODEL_SEASONALITY"))
+
 # Instantiate your model
-model = NaiveSeasonal('1D')
+model = NaiveSeasonal(seasonality)
 # Create a forecast server by passing in your model
 app = server_factory(model)
