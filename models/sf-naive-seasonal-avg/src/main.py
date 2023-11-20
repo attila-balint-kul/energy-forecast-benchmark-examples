@@ -26,12 +26,12 @@ def periods_in_duration(ts, duration) -> int:
 class NaiveSeasonalAvg:
 
     def __init__(self, season_length: str, window_size: int):
-        self.season_length = season_length
+        self.season_length = season_length.upper()
         self.window_size = window_size
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name="statsforecast.models.SeasonalWindowAverage",
+            name=f"Statsforecast.SeasonalWindowAverage.{self.season_length}.W{self.window_size}",
             authors=[
                 AuthorInfo(
                     name="Attila Balint",

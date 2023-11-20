@@ -11,7 +11,7 @@ class NaiveModel:
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name="statsforecast.models.Naive",
+            name="Statsforecast.Naive",
             authors=[
                 AuthorInfo(
                     name="Attila Balint",
