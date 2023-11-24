@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from darts import TimeSeries
 from darts.models import FourTheta
+from darts.utils.utils import SeasonalityMode
 from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import periods_in_duration
@@ -15,7 +16,7 @@ class FourThetaModel:
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name=f"Darts.FourTheta.{self.seasonality}",
+            name=f"Darts.FourTheta.{self.seasonality}.SM-A",
             authors=[
                 AuthorInfo(
                     name="Attila Balint",
@@ -39,7 +40,10 @@ class FourThetaModel:
         history = history.fillna(history['y'].mean())
 
         seasonality_period = periods_in_duration(history.index, duration=self.seasonality)
-        model = FourTheta(seasonality_period=seasonality_period)
+        model = FourTheta(
+            seasonality_period=seasonality_period,
+            seasonality_mode=SeasonalityMode.ADDITIVE,
+        )
 
         series = TimeSeries.from_dataframe(history, value_cols=['y'])
         model.fit(series)
