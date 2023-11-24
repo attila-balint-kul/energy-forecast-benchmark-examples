@@ -42,7 +42,7 @@ class FourThetaModel:
         seasonality_period = periods_in_duration(history.index, duration=self.seasonality)
         model = FourTheta(
             seasonality_period=seasonality_period,
-            seasonality_mode=SeasonalityMode.ADDITIVE,
+            season_mode=SeasonalityMode.ADDITIVE,
         )
 
         series = TimeSeries.from_dataframe(history, value_cols=['y'])
