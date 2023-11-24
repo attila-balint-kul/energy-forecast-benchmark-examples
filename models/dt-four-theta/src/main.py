@@ -36,6 +36,8 @@ class FourThetaModel:
         future_covariates: pd.DataFrame | None = None,
         **kwargs
     ) -> pd.DataFrame:
+        history = history.fillna(history['y'].mean())
+
         seasonality_period = periods_in_duration(history.index, duration=self.seasonality)
         model = FourTheta(seasonality_period=seasonality_period)
 
