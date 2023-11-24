@@ -1,36 +1,20 @@
 import os
-from datetime import timedelta
 
 import pandas as pd
-from pandas import Timedelta
 from statsforecast.models import SeasonalNaive
 from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
-from enfobench.evaluation.utils import create_forecast_index
-
-
-def periods_in_duration(ts, duration) -> int:
-    if isinstance(duration, timedelta):
-        duration = Timedelta(duration)
-
-    first_delta = ts[1] - ts[0]
-    last_delta = ts[-1] - ts[-2]
-    assert first_delta == last_delta, "Season length is not constant"
-
-    periods = duration / first_delta
-    assert periods.is_integer(), "Season length is not a multiple of the frequency"
-
-    return int(periods)
+from enfobench.evaluation.utils import create_forecast_index, periods_in_duration
 
 
 class NaiveSeasonal:
 
-    def __init__(self, season_length: str):
-        self.season_length = season_length.upper()
+    def __init__(self, seasonality: str):
+        self.seasonality = seasonality.upper()
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name=f"Statsforecast.SeasonalNaive.{self.season_length}",
+            name=f"Statsforecast.SeasonalNaive.{self.seasonality}",
             authors=[
                 AuthorInfo(
                     name="Attila Balint",
@@ -39,7 +23,7 @@ class NaiveSeasonal:
             ],
             type=ForecasterType.quantile,
             params={
-                "seasonality": self.season_length,
+                "seasonality": self.seasonality,
             },
         )
 
@@ -54,7 +38,7 @@ class NaiveSeasonal:
     ) -> pd.DataFrame:
         # Create model using period length
         y = history.y
-        periods = periods_in_duration(ts=y.index, duration=pd.Timedelta(self.season_length))
+        periods = periods_in_duration(y.index, duration=self.seasonality)
         model = SeasonalNaive(season_length=periods)
 
         # Make forecast
@@ -81,7 +65,7 @@ class NaiveSeasonal:
 
 
 # Load parameters
-seasonality = str(os.getenv("ENFOBENCH_MODEL_SEASONALITY"))
+seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 
 # Instantiate your model
 model = NaiveSeasonal(seasonality)

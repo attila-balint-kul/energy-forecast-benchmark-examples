@@ -1,2 +1,2 @@
-enfobench>=0.3.2
+enfobench>=0.3.3
 u8darts==0.27.0

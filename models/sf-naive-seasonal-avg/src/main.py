@@ -1,26 +1,10 @@
 import os
-from datetime import timedelta
 
 import pandas as pd
-from pandas import Timedelta
 from statsforecast.models import SeasonalWindowAverage
 from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
-from enfobench.evaluation.utils import create_forecast_index
-
-
-def periods_in_duration(ts, duration) -> int:
-    if isinstance(duration, timedelta):
-        duration = Timedelta(duration)
-
-    first_delta = ts[1] - ts[0]
-    last_delta = ts[-1] - ts[-2]
-    assert first_delta == last_delta, "Season length is not constant"
-
-    periods = duration / first_delta
-    assert periods.is_integer(), "Season length is not a multiple of the frequency"
-
-    return int(periods)
+from enfobench.evaluation.utils import create_forecast_index, periods_in_duration
 
 
 class NaiveSeasonalAvg:
@@ -56,7 +40,7 @@ class NaiveSeasonalAvg:
     ) -> pd.DataFrame:
         # Create model using period length
         y = history.y
-        periods = periods_in_duration(ts=y.index, duration=pd.Timedelta(self.season_length))
+        periods = periods_in_duration(y.index, duration=self.season_length)
         model = SeasonalWindowAverage(season_length=periods, window_size=self.window_size)
 
         # Make forecast
@@ -80,7 +64,7 @@ class NaiveSeasonalAvg:
 
 
 # Load parameters
-seasonality = str(os.getenv("ENFOBENCH_MODEL_SEASONALITY"))
+seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 window_size = int(os.getenv("ENFOBENCH_MODEL_WINDOW_SIZE"))
 
 # Instantiate your model
