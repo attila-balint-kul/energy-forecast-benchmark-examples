@@ -9,13 +9,13 @@ from enfobench.evaluation.utils import create_forecast_index, periods_in_duratio
 
 class NaiveSeasonalAvg:
 
-    def __init__(self, season_length: str, window_size: int):
-        self.season_length = season_length.upper()
+    def __init__(self, seasonality: str, window_size: int):
+        self.seasonality = seasonality.upper()
         self.window_size = window_size
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name=f"Statsforecast.SeasonalWindowAverage.{self.season_length}.W{self.window_size}",
+            name=f"Statsforecast.SeasonalWindowAverage.{self.seasonality}.W{self.window_size}",
             authors=[
                 AuthorInfo(
                     name="Attila Balint",
@@ -24,7 +24,7 @@ class NaiveSeasonalAvg:
             ],
             type=ForecasterType.point,
             params={
-                "seasonality": self.season_length,
+                "seasonality": self.seasonality,
                 "window_size": self.window_size
             },
         )
@@ -40,7 +40,7 @@ class NaiveSeasonalAvg:
     ) -> pd.DataFrame:
         # Create model using period length
         y = history.y
-        periods = periods_in_duration(y.index, duration=self.season_length)
+        periods = periods_in_duration(y.index, duration=self.seasonality)
         model = SeasonalWindowAverage(season_length=periods, window_size=self.window_size)
 
         # Make forecast
