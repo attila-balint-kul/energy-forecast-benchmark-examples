@@ -11,12 +11,12 @@ from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import create_forecast_index
 
-class NaiveModel:
+class NaiveDailyModel:
 
     def info(self) -> ModelInfo:
         
         return ModelInfo(
-            name="Darts.dailyNaive",
+            name="Darts.NaiveDaily",
             authors=[
                 AuthorInfo(
                     name="Mohamad Khalil",
@@ -69,6 +69,6 @@ class NaiveModel:
         
         return forecast
 
-model = NaiveModel()
+model = NaiveDailyModel()
 
 app = server_factory(model)
