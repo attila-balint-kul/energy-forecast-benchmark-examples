@@ -6,8 +6,11 @@ COPY ./requirements.txt /usr/local/app/requirements.txt
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r /usr/local/app/requirements.txt
 
-COPY ./src /usr/local/app/src
+# Polars requires AVX2 CPU instructions, which are not available on the server
+RUN pip uninstall -y polars
+RUN pip install --no-cache-dir polars-lts-cpu
 
+COPY ./src /usr/local/app/src
 
 ENV ENFOBENCH_MODEL_SEASONALITY="1D"
 ENV ENFOBENCH_MODEL_WINDOW_SIZE="28"

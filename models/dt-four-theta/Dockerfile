@@ -12,7 +12,6 @@ RUN pip install --no-cache-dir polars-lts-cpu
 
 COPY ./src /usr/local/app/src
 
-
 ENV ENFOBENCH_MODEL_SEASONALITY="1D"
 
 EXPOSE 3000
