@@ -9,7 +9,7 @@ from enfobench.evaluation.metrics import mean_absolute_error, mean_bias_error,ro
 from datetime import timedelta
 from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
-from enfobench.evaluation.utils import create_forecast_index,
+from enfobench.evaluation.utils import create_forecast_index, periods_in_duration
 
 class DailyNaiveModel:
 
