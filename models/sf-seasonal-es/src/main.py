@@ -7,7 +7,7 @@ from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import create_forecast_index, periods_in_duration
 
 
-class ExponentialSmoothing:
+class SeasonalExponentialSmoothingModel:
 
     def __init__(self, seasonality: str, alpha: float):
         self.seasonality = seasonality
@@ -43,7 +43,7 @@ class ExponentialSmoothing:
         **kwargs
     ) -> pd.DataFrame:
         # Create model using period length
-        y = history.y
+        y = history.y.fillna(history.y.mean())
 
         periods = periods_in_duration(y.index, duration=self.seasonality)
         model = SeasonalExponentialSmoothing(season_length=periods, alpha=self._alpha)
@@ -62,7 +62,9 @@ class ExponentialSmoothing:
         forecast = (
             pd.DataFrame(
                 index=index,
-                data=pred
+                data={
+                    'yhat': pred['mean'],
+                }
             )
             .rename(columns={"mean": "yhat"})
             .fillna(y.mean())
@@ -75,6 +77,6 @@ seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 alpha = float(os.getenv("ENFOBENCH_MODEL_ALPHA"))
 
 # Instantiate your model
-model = ExponentialSmoothing(seasonality, alpha)
+model = SeasonalExponentialSmoothingModel(seasonality, alpha)
 # Create a forecast server by passing in your model
 app = server_factory(model)
