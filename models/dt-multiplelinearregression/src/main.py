@@ -13,9 +13,12 @@ from enfobench.dataset.utils import create_perfect_forecasts_from_covariates
 
 class MultipleLinearRegressionDarts:
 
+    def __init__(self, seasonality: str):
+        self.seasonality = seasonality()
+
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name="Darts.MultipleLinearRegression",
+            name=f"Darts.MultipleLinearRegression.{self.seasonality}",
             authors=[
                 AuthorInfo(
                     name="Mohamad Khalil",
@@ -24,26 +27,27 @@ class MultipleLinearRegressionDarts:
             ],
             
             type=ForecasterType.point,
-            params={},
+            params={"seasonality": self.seasonality},
         )
 
     def forecast(
         self,
         horizon: int,
         history: pd.DataFrame,
-        past_covariates: pd.DataFrame,
-        future_covariates: pd.DataFrame, 
+        past_covariates: pd.DataFrame  | None = None,
+        future_covariates: pd.DataFrame | None = None,
         **kwargs
         
     ) -> pd.DataFrame:
         
-        model=RegressionModel(lags= list(range(-336,0)), lags_past_covariates = (horizon), output_chunk_length=horizon,model=LinearRegression())
-
+        periods = periods_in_duration(history.index, duration=self.seasonality)
+        model=RegressionModel(lags= periods, output_chunk_length=horizon,model=LinearRegression())
         series = TimeSeries.from_dataframe(history, value_cols=['y'])
-        past_covariates = TimeSeries.from_dataframe(past_covariates, value_cols=['temperature'])
+    
+        #past_covariates = TimeSeries.from_dataframe(past_covariates, value_cols=['temperature'])
         #future_covariates = TimeSeries.from_dataframe(future_covariates, value_cols=['y'])
-
-        model.fit(series, past_covariates=past_covariates,)
+        #list(range(-336,0))
+        model.fit(series,)
         
         # Make forecast
         pred = model.predict(horizon)
@@ -55,8 +59,9 @@ class MultipleLinearRegressionDarts:
         )
         
         return forecast
-
-model = MultipleLinearRegressionDarts()
+        
+seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
+model = MultipleLinearRegressionDarts(seasonality)
 
 app = server_factory(model)
 
