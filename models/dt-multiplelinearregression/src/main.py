@@ -13,8 +13,8 @@ from enfobench.dataset.utils import create_perfect_forecasts_from_covariates
 
 class MultipleLinearRegressionDarts:
 
-    def __init__(self, seasonality: str):
-        self.seasonality = seasonality.upper()
+    def __init__(self, seasonality):
+        self.seasonality = seasonality
 
     def info(self) -> ModelInfo:
         return ModelInfo(
@@ -41,7 +41,7 @@ class MultipleLinearRegressionDarts:
     ) -> pd.DataFrame:
         
         periods = periods_in_duration(history.index, duration=self.seasonality)
-        model=RegressionModel(lags= periods, output_chunk_length=horizon,model=LinearRegression())
+        model=RegressionModel(lags= list(range(-periods,0)), output_chunk_length=horizon,model=LinearRegression())
         series = TimeSeries.from_dataframe(history, value_cols=['y'])
     
         #past_covariates = TimeSeries.from_dataframe(past_covariates, value_cols=['temperature'])
@@ -60,8 +60,7 @@ class MultipleLinearRegressionDarts:
         
         return forecast
         
-seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
-model = MultipleLinearRegressionDarts(seasonality)
+model = MultipleLinearRegressionDarts(seasonality="7D")
 
 app = server_factory(model)
 
