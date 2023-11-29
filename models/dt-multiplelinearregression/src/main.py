@@ -14,7 +14,7 @@ from enfobench.dataset.utils import create_perfect_forecasts_from_covariates
 class MultipleLinearRegressionDarts:
 
     def __init__(self, seasonality: str):
-        self.seasonality = seasonality()
+        self.seasonality = seasonality.upper()
 
     def info(self) -> ModelInfo:
         return ModelInfo(
