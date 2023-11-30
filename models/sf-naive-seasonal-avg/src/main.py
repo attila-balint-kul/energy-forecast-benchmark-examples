@@ -34,8 +34,10 @@ class SeasonalWindowAverageModel:
         level: list[int] | None = None,
         **kwargs,
     ) -> pd.DataFrame:
-        # Create model using period length
-        y = history.y
+        # Fill missing values
+        y = history.y.fillna(history.y.mean())
+
+        # Create model
         periods = periods_in_duration(y.index, duration=self.seasonality)
         model = SeasonalWindowAverage(
             season_length=periods, window_size=self.window_size
@@ -47,7 +49,7 @@ class SeasonalWindowAverageModel:
         # Create index for forecast
         index = create_forecast_index(history=history, horizon=horizon)
 
-        # Format forecast dataframe
+        # Postprocess forecast
         forecast = pd.DataFrame(
             index=index,
             data={

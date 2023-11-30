@@ -26,18 +26,22 @@ class DartsNaiveMeanModel:
         future_covariates: pd.DataFrame | None = None,
         **kwargs
     ) -> pd.DataFrame:
+        # Fill missing values
+        history = history.fillna(history.y.mean())
+
+        # Create model
         model = NaiveMean()
 
+        # Fit model
         series = TimeSeries.from_dataframe(history, value_cols=["y"])
         model.fit(series)
 
         # Make forecast
         pred = model.predict(horizon)
 
+        # Postprocess forecast
         forecast = (
-            pred.pd_dataframe()
-            .rename(columns={"y": "yhat"})
-            .fillna(history["y"].mean())
+            pred.pd_dataframe().rename(columns={"y": "yhat"}).fillna(history.y.mean())
         )
         return forecast
 

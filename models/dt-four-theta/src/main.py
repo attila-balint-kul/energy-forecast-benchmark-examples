@@ -33,8 +33,10 @@ class DartsFourThetaModel:
         future_covariates: pd.DataFrame | None = None,
         **kwargs,
     ) -> pd.DataFrame:
-        history = history.fillna(history["y"].mean())
+        # Fill missing values
+        history = history.fillna(history.y.mean())
 
+        # Create model
         seasonality_period = periods_in_duration(
             history.index, duration=self.seasonality
         )
@@ -43,16 +45,16 @@ class DartsFourThetaModel:
             season_mode=SeasonalityMode.ADDITIVE,
         )
 
+        # Fit model
         series = TimeSeries.from_dataframe(history, value_cols=["y"])
         model.fit(series)
 
         # Make forecast
         pred = model.predict(horizon)
 
+        # Postprocess forecast
         forecast = (
-            pred.pd_dataframe()
-            .rename(columns={"y": "yhat"})
-            .fillna(history["y"].mean())
+            pred.pd_dataframe().rename(columns={"y": "yhat"}).fillna(history.y.mean())
         )
         return forecast
 

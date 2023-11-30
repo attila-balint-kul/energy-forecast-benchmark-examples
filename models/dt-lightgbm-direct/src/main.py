@@ -32,6 +32,10 @@ class DartsLightGBMModel:
         future_covariates: pd.DataFrame | None = None,
         **kwargs,
     ) -> pd.DataFrame:
+        # Fill missing values
+        history = history.fillna(history.y.mean())
+
+        # Create model
         periods = periods_in_duration(history.index, duration=self.seasonality)
         model = LightGBMModel(
             lags=list(range(-periods, 0)),
@@ -39,16 +43,16 @@ class DartsLightGBMModel:
             multi_models=False,
         )
 
+        # Fit model
         series = TimeSeries.from_dataframe(history, value_cols=["y"])
         model.fit(series)
 
         # Make forecast
         pred = model.predict(horizon)
 
+        # Postprocess forecast
         forecast = (
-            pred.pd_dataframe()
-            .rename(columns={"y": "yhat"})
-            .fillna(history["y"].mean())
+            pred.pd_dataframe().rename(columns={"y": "yhat"}).fillna(history.y.mean())
         )
 
         return forecast
