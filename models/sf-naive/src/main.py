@@ -8,15 +8,11 @@ from enfobench.evaluation.utils import create_forecast_index
 
 
 class NaiveModel:
-
     def info(self) -> ModelInfo:
         return ModelInfo(
             name="Statsforecast.Naive",
             authors=[
-                AuthorInfo(
-                    name="Attila Balint",
-                    email="attila.balint@kuleuven.be"
-                )
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.quantile,
             params={},
@@ -36,22 +32,14 @@ class NaiveModel:
         model = Naive()
 
         # Make forecast
-        pred = model.forecast(
-            y=y.values,
-            h=horizon,
-            level=level,
-            **kwargs
-        )
+        pred = model.forecast(y=y.values, h=horizon, level=level, **kwargs)
 
         # Create index for forecast
         index = create_forecast_index(history=history, horizon=horizon)
 
         # Format forecast dataframe
         forecast = (
-            pd.DataFrame(
-                index=index,
-                data=pred
-            )
+            pd.DataFrame(index=index, data=pred)
             .rename(columns={"mean": "yhat"})
             .fillna(y.mean())
         )
@@ -60,5 +48,6 @@ class NaiveModel:
 
 # Instantiate your model
 model = NaiveModel()
+
 # Create a forecast server by passing in your model
 app = server_factory(model)

@@ -9,19 +9,15 @@ from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import periods_in_duration
 
 
-class FourThetaModel:
-
+class DartsFourThetaModel:
     def __init__(self, seasonality: str):
-        self.seasonality = seasonality
+        self.seasonality = seasonality.upper()
 
     def info(self) -> ModelInfo:
         return ModelInfo(
             name=f"Darts.FourTheta.{self.seasonality}.SM-A",
             authors=[
-                AuthorInfo(
-                    name="Attila Balint",
-                    email="attila.balint@kuleuven.be"
-                )
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.point,
             params={
@@ -35,17 +31,19 @@ class FourThetaModel:
         history: pd.DataFrame,
         past_covariates: pd.DataFrame | None = None,
         future_covariates: pd.DataFrame | None = None,
-        **kwargs
+        **kwargs,
     ) -> pd.DataFrame:
-        history = history.fillna(history['y'].mean())
+        history = history.fillna(history["y"].mean())
 
-        seasonality_period = periods_in_duration(history.index, duration=self.seasonality)
+        seasonality_period = periods_in_duration(
+            history.index, duration=self.seasonality
+        )
         model = FourTheta(
             seasonality_period=seasonality_period,
             season_mode=SeasonalityMode.ADDITIVE,
         )
 
-        series = TimeSeries.from_dataframe(history, value_cols=['y'])
+        series = TimeSeries.from_dataframe(history, value_cols=["y"])
         model.fit(series)
 
         # Make forecast
@@ -54,15 +52,16 @@ class FourThetaModel:
         forecast = (
             pred.pd_dataframe()
             .rename(columns={"y": "yhat"})
-            .fillna(history['y'].mean())
+            .fillna(history["y"].mean())
         )
         return forecast
 
 
+# Load parameters
 seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 
 # Instantiate your model
-model = FourThetaModel(seasonality)
+model = DartsFourThetaModel(seasonality)
 
 # Create a forecast server by passing in your model
 app = server_factory(model)

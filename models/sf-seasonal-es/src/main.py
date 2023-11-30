@@ -8,9 +8,8 @@ from enfobench.evaluation.utils import create_forecast_index, periods_in_duratio
 
 
 class SeasonalExponentialSmoothingModel:
-
     def __init__(self, seasonality: str, alpha: float):
-        self.seasonality = seasonality
+        self.seasonality = seasonality.upper()
 
         if alpha < 0 or alpha > 1:
             msg = "Alpha parameter must be between 0 and 1"
@@ -21,14 +20,11 @@ class SeasonalExponentialSmoothingModel:
         return ModelInfo(
             name=f"Statsforecast.SeasonalExponentialSmoothing.{self.seasonality}.A{self._alpha:.3f}",
             authors=[
-                AuthorInfo(
-                    name="Attila Balint",
-                    email="attila.balint@kuleuven.be"
-                )
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.point,
             params={
-                "season_length": self.seasonality,
+                "seasonality": self.seasonality,
                 "alpha": self._alpha,
             },
         )
@@ -40,7 +36,7 @@ class SeasonalExponentialSmoothingModel:
         past_covariates: pd.DataFrame | None = None,
         future_covariates: pd.DataFrame | None = None,
         level: list[int] | None = None,
-        **kwargs
+        **kwargs,
     ) -> pd.DataFrame:
         # Create model using period length
         y = history.y.fillna(history.y.mean())
@@ -49,11 +45,7 @@ class SeasonalExponentialSmoothingModel:
         model = SeasonalExponentialSmoothing(season_length=periods, alpha=self._alpha)
 
         # Make forecast
-        pred = model.forecast(
-            y=y.values,
-            h=horizon,
-            **kwargs
-        )
+        pred = model.forecast(y=y.values, h=horizon, **kwargs)
 
         # Create index for forecast
         index = create_forecast_index(history=history, horizon=horizon)
@@ -63,8 +55,8 @@ class SeasonalExponentialSmoothingModel:
             pd.DataFrame(
                 index=index,
                 data={
-                    'yhat': pred['mean'],
-                }
+                    "yhat": pred["mean"],
+                },
             )
             .rename(columns={"mean": "yhat"})
             .fillna(y.mean())
@@ -77,6 +69,7 @@ seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 alpha = float(os.getenv("ENFOBENCH_MODEL_ALPHA"))
 
 # Instantiate your model
-model = SeasonalExponentialSmoothingModel(seasonality, alpha)
+model = SeasonalExponentialSmoothingModel(seasonality=seasonality, alpha=alpha)
+
 # Create a forecast server by passing in your model
 app = server_factory(model)

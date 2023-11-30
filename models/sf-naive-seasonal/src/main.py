@@ -7,8 +7,7 @@ from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import create_forecast_index, periods_in_duration
 
 
-class NaiveSeasonal:
-
+class SeasonalNaiveModel:
     def __init__(self, seasonality: str):
         self.seasonality = seasonality.upper()
 
@@ -16,10 +15,7 @@ class NaiveSeasonal:
         return ModelInfo(
             name=f"Statsforecast.SeasonalNaive.{self.seasonality}",
             authors=[
-                AuthorInfo(
-                    name="Attila Balint",
-                    email="attila.balint@kuleuven.be"
-                )
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.quantile,
             params={
@@ -34,7 +30,7 @@ class NaiveSeasonal:
         past_covariates: pd.DataFrame | None = None,
         future_covariates: pd.DataFrame | None = None,
         level: list[int] | None = None,
-        **kwargs
+        **kwargs,
     ) -> pd.DataFrame:
         # Create model using period length
         y = history.y
@@ -42,22 +38,14 @@ class NaiveSeasonal:
         model = SeasonalNaive(season_length=periods)
 
         # Make forecast
-        pred = model.forecast(
-            y=y.values,
-            h=horizon,
-            level=level,
-            **kwargs
-        )
+        pred = model.forecast(y=y.values, h=horizon, level=level, **kwargs)
 
         # Create index for forecast
         index = create_forecast_index(history=history, horizon=horizon)
 
         # Format forecast dataframe
         forecast = (
-            pd.DataFrame(
-                index=index,
-                data=pred
-            )
+            pd.DataFrame(index=index, data=pred)
             .rename(columns={"mean": "yhat"})
             .fillna(y.mean())
         )
@@ -68,6 +56,6 @@ class NaiveSeasonal:
 seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 
 # Instantiate your model
-model = NaiveSeasonal(seasonality)
+model = SeasonalNaiveModel(seasonality)
 # Create a forecast server by passing in your model
 app = server_factory(model)

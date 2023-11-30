@@ -7,16 +7,12 @@ from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
 
 
-class NaiveModel:
-
+class DartsNaiveMeanModel:
     def info(self) -> ModelInfo:
         return ModelInfo(
             name="Darts.NaiveMean",
             authors=[
-                AuthorInfo(
-                    name="Attila Balint",
-                    email="attila.balint@kuleuven.be"
-                )
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.point,
             params={},
@@ -32,7 +28,7 @@ class NaiveModel:
     ) -> pd.DataFrame:
         model = NaiveMean()
 
-        series = TimeSeries.from_dataframe(history, value_cols=['y'])
+        series = TimeSeries.from_dataframe(history, value_cols=["y"])
         model.fit(series)
 
         # Make forecast
@@ -41,12 +37,13 @@ class NaiveModel:
         forecast = (
             pred.pd_dataframe()
             .rename(columns={"y": "yhat"})
-            .fillna(history['y'].mean())
+            .fillna(history["y"].mean())
         )
         return forecast
 
 
 # Instantiate your model
-model = NaiveModel()
+model = DartsNaiveMeanModel()
+
 # Create a forecast server by passing in your model
 app = server_factory(model)
