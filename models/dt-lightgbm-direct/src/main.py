@@ -2,20 +2,19 @@ import os
 
 import pandas as pd
 from darts import TimeSeries
-from darts.models import RegressionModel
-from sklearn.linear_model import LinearRegression
+from darts.models import LightGBMModel
 from enfobench import AuthorInfo, ModelInfo, ForecasterType
 from enfobench.evaluation.server import server_factory
 from enfobench.evaluation.utils import periods_in_duration
 
 
-class DartsLinearRegressionModel:
+class DartsLightGBMModel:
     def __init__(self, seasonality: str):
         self.seasonality = seasonality.upper()
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name=f"Darts.LinearRegression.{self.seasonality}",
+            name=f"Darts.LightGBM.Direct.{self.seasonality}",
             authors=[
                 AuthorInfo(name="Mohamad Khalil", email="coo17619@newcastle.ac.uk")
             ],
@@ -34,10 +33,10 @@ class DartsLinearRegressionModel:
         **kwargs,
     ) -> pd.DataFrame:
         periods = periods_in_duration(history.index, duration=self.seasonality)
-        model = RegressionModel(
+        model = LightGBMModel(
             lags=list(range(-periods, 0)),
             output_chunk_length=horizon,
-            model=LinearRegression(),
+            multi_models=False,
         )
 
         series = TimeSeries.from_dataframe(history, value_cols=["y"])
@@ -51,6 +50,7 @@ class DartsLinearRegressionModel:
             .rename(columns={"y": "yhat"})
             .fillna(history["y"].mean())
         )
+
         return forecast
 
 
@@ -58,7 +58,7 @@ class DartsLinearRegressionModel:
 seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
 
 # Instantiate your model
-model = DartsLinearRegressionModel(seasonality=seasonality)
+model = DartsLightGBMModel(seasonality=seasonality)
 
 # Create a forecast server by passing in your model
 app = server_factory(model)

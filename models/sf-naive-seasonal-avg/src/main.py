@@ -19,7 +19,10 @@ class SeasonalWindowAverageModel:
                 AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.point,
-            params={"seasonality": self.seasonality, "window_size": self.window_size,},
+            params={
+                "seasonality": self.seasonality,
+                "window_size": self.window_size,
+            },
         )
 
     def forecast(
