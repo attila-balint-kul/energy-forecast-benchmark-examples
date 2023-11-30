@@ -1,5 +1,9 @@
 FROM python:3.11.6-slim-bookworm
 
+# OpenMP is required by LightGBM
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libgomp1
+
 WORKDIR /usr/local/app
 
 COPY ./requirements.txt /usr/local/app/requirements.txt
