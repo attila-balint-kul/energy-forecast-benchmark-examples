@@ -10,18 +10,21 @@ from enfobench.evaluation.utils import periods_in_duration
 
 
 class DartsLinearRegressionModel:
-    def __init__(self, seasonality: str):
+    def __init__(self, seasonality: str, direct: bool):
         self.seasonality = seasonality.upper()
+        self.direct = direct
 
     def info(self) -> ModelInfo:
         return ModelInfo(
-            name=f"Darts.LinearRegression.{self.seasonality}",
+            name=f"Darts.LinearRegression.{'Direct.' if self.direct else ''}{self.seasonality}",
             authors=[
-                AuthorInfo(name="Mohamad Khalil", email="coo17619@newcastle.ac.uk")
+                AuthorInfo(name="Mohamad Khalil", email="coo17619@newcastle.ac.uk"),
+                AuthorInfo(name="Attila Balint", email="attila.balint@kuleuven.be")
             ],
             type=ForecasterType.point,
             params={
                 "seasonality": self.seasonality,
+                "direct": self.direct,
             },
         )
 
@@ -42,6 +45,7 @@ class DartsLinearRegressionModel:
             lags=list(range(-periods, 0)),
             output_chunk_length=horizon,
             model=LinearRegression(),
+            multi_models=not self.direct,
         )
 
         # Fit model
@@ -60,9 +64,10 @@ class DartsLinearRegressionModel:
 
 # Load parameters
 seasonality = os.getenv("ENFOBENCH_MODEL_SEASONALITY")
+direct = bool(int(os.getenv("ENFOBENCH_MODEL_DIRECT")))
 
 # Instantiate your model
-model = DartsLinearRegressionModel(seasonality=seasonality)
+model = DartsLinearRegressionModel(seasonality=seasonality, direct=direct)
 
 # Create a forecast server by passing in your model
 app = server_factory(model)

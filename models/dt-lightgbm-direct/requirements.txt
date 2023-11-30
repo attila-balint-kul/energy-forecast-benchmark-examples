@@ -1,3 +1,2 @@
 enfobench>=0.3.5,<0.4.0
-u8darts==0.27.0
-lightgbm>=3.2.0,<4.0.0
+u8darts[notorch]==0.27.0
